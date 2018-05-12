@@ -11,7 +11,7 @@
 #include <wbemidl.h>
 #include <wmistr.h>
 #include <tdh.h>
-#include <vector>
+
 
 
 #define MAXIMUM_SESSION_NAME	1024
