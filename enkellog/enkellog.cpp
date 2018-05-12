@@ -35,7 +35,7 @@ typedef struct tagProcessTraceArguments
 typedef struct
 {
 	ULONG_PTR pFileObject;
-	CHAR chrAlign[3];
+	//CHAR chrAlign[3];
 	WCHAR strFilename[1];
 } FILEIODATA, *LPFILEIODATA;
 
@@ -165,7 +165,7 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 		// 0:Name, 32 File Create, File Delete 35
 		if (eventTrace->Header.Class.Type == 32)
 		{
-			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIODATA) + 2, CURRENTWINMAXPATH);
+			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIODATA) + 6, CURRENTWINMAXPATH);
 
 			if (fileNameSize <= 0 || fileNameSize >= CURRENTWINMAXPATH) return;
 			
