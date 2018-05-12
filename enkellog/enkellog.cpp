@@ -188,7 +188,7 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 			WCHAR strFileTime[100];
 			wsprintfW(strFileTime, L"%I64d|%d|%lu|", eventTrace->Header.TimeStamp.QuadPart, eventTrace->Header.Class.Type, eventTrace->Header.ProcessId);
 
-			DWORD timeLen = wcsnlen_s(strFileTime, 100);
+			DWORD timeLen = (DWORD) wcsnlen_s(strFileTime, 100);
 
 			bErrorFlag = WriteFile(traceArgs->hFile, strFileTime, timeLen * sizeof(WCHAR), &dwBytesWritten, NULL);
 			dwAccumulatedBytes += dwBytesWritten;
@@ -220,6 +220,7 @@ int __cdecl wmain(int argc, wchar_t *argv[])
 	TRACEHANDLE hOpenedTrace =	NULL;
 	PWSTR LoggerName =			KERNEL_LOGGER_NAME; // Kernel logger
 	PEVENT_TRACE_PROPERTIES		traceProps;
+	HANDLE traceThread =		NULL;
 
 
 	// Allokera minnet vi vill använda
@@ -244,11 +245,11 @@ int __cdecl wmain(int argc, wchar_t *argv[])
 			else if (wcscmp(argv[i], L"-e") == 0 && excludePathsCount < MAXEXCLUDEPATHS) // Exkludera
 			{
 				i++;
-				int flen = wcsnlen_s(argv[i], 1024);
+				int flen = (int) wcsnlen_s(argv[i], 1024);
 
-				if (flen < 1024)
+				if (flen < 1024 && flen > 0)
 				{
-					excludePathsLengths[excludePathsCount] = wcsnlen_s(argv[i], 1024);
+					excludePathsLengths[excludePathsCount] = (int) wcsnlen_s(argv[i], 1024);
 					wcsncpy_s(strExcludePaths[excludePathsCount++], argv[i], flen);					
 				}
 			}
@@ -327,7 +328,7 @@ int __cdecl wmain(int argc, wchar_t *argv[])
 	wprintf(L"[+] ProcessTrace starts...\n");
 	traceArgs->traceHandle = &hOpenedTrace;
 
-	HANDLE traceThread = startProcessTrace(traceArgs);
+	traceThread = startProcessTrace(traceArgs);
 
 	wprintf(L"[+] Press key to exit\n");
 	_getch();
@@ -344,7 +345,11 @@ Exit:
 	wprintf(L"[+] Waiting for thread to complete...\n");
 
 	// Vänta på att process-tråden är klar. 
-	WaitForSingleObject(traceThread, INFINITE); 
+
+	if (traceThread != NULL)
+	{
+		WaitForSingleObject(traceThread, INFINITE);
+	}
 
 
 	if (traceArgs->hFile != NULL)
