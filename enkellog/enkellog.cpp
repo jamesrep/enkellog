@@ -35,9 +35,20 @@ typedef struct tagProcessTraceArguments
 typedef struct
 {
 	ULONG_PTR pFileObject;
-	//CHAR chrAlign[3];
 	WCHAR strFilename[1];
 } FILEIODATA, *LPFILEIODATA;
+
+typedef struct tagFILEIOCREATE
+{
+	UINT64 IrpPtr;
+	UINT64 TTID;
+	UINT32 FileObject;
+	UINT32 CreateOptions;
+	UINT32 FileAttributes;
+	UINT32 ShareAccess;
+	WCHAR strFilename[1];
+} FILEIOCREATE, *LPFILEIOCREATE;
+
 
 LPProcessTraceArguments		traceArgs = NULL;	// Global för callbacks
 WCHAR strExcludePaths[MAXEXCLUDEPATHS][1024];	// Prefix för sökvägar som ska exkluderas
@@ -92,7 +103,7 @@ PEVENT_TRACE_PROPERTIES createTraceProps(HANDLE hProgHeap)
 	traceProps->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
 	traceProps->MinimumBuffers = 1;
 	traceProps->FlushTimer = 1;
-	traceProps->EnableFlags = EVENT_TRACE_FLAG_DISK_IO | EVENT_TRACE_FLAG_DISK_FILE_IO ;
+	traceProps->EnableFlags = EVENT_TRACE_FLAG_DISK_IO | EVENT_TRACE_FLAG_DISK_FILE_IO | EVENT_TRACE_FLAG_FILE_IO_INIT ;
 
 	return traceProps;
 }
@@ -162,14 +173,17 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 {
 	if (memcmp(&eventTrace->Header.Guid, &GUID_FILEIO, sizeof(GUID)) == 0)
 	{
+
 		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363776(v=vs.85).aspx
-		if (eventTrace->Header.Class.Type == 32)
+		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa964768(v=vs.85).aspx
+		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363885(v=vs.85).aspx
+		if (eventTrace->Header.Class.Type == 64)
 		{
 			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIODATA) + 6, CURRENTWINMAXPATH);
 
 			if (fileNameSize <= 0 || fileNameSize >= CURRENTWINMAXPATH) return;
 			
-			FILEIODATA *fileData = (FILEIODATA *)eventTrace->MofData;
+			LPFILEIOCREATE fileData = (LPFILEIOCREATE)eventTrace->MofData;
 
 			// Kolla upp ifall sökvägen finns i exkluderingslistan.
 			for (int i = 0; i < excludePathsCount; i++)
