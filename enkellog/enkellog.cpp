@@ -162,7 +162,7 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 {
 	if (memcmp(&eventTrace->Header.Guid, &GUID_FILEIO, sizeof(GUID)) == 0)
 	{
-		// 0:Name, 32 File Create, File Delete 35
+		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363776(v=vs.85).aspx
 		if (eventTrace->Header.Class.Type == 32)
 		{
 			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIODATA) + 6, CURRENTWINMAXPATH);
