@@ -179,7 +179,7 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363885(v=vs.85).aspx
 		if (eventTrace->Header.Class.Type == 64)
 		{
-			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIODATA) + 6, CURRENTWINMAXPATH);
+			int fileNameSize = min(eventTrace->MofLength - sizeof(FILEIOCREATE) + 6, CURRENTWINMAXPATH);
 
 			if (fileNameSize <= 0 || fileNameSize >= CURRENTWINMAXPATH) return;
 			
