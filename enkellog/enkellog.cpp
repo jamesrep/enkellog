@@ -185,6 +185,7 @@ VOID WINAPI CALLBACK_eventTrace(_In_ PEVENT_TRACE eventTrace)
 			
 			LPFILEIOCREATE fileData = (LPFILEIOCREATE)eventTrace->MofData;
 
+
 			// Kolla upp ifall sökvägen finns i exkluderingslistan.
 			for (int i = 0; i < excludePathsCount; i++)
 			{
